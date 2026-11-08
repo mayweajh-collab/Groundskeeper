@@ -3,6 +3,7 @@ import {parseCoordinates,hasCoordinates} from '/assets/lawn-geo.js';
 import {clientRecord,isClientArchived,visitClientKey,isReportedVisit,activeClients,archiveClient,restoreClient,registerClients,normalizeOperations,weekDates,validServiceDate,validateTeam} from '/assets/lawn-workspace.js';
 import {workspaceForDay,recommendWeeklyPlan} from '/assets/lawn-week.js';
 import {suggestJobPrice,planningFingerprint} from '/assets/lawn-planner.js';
+import {validateServiceTimeDefaults,reviewMissingServiceTimes,fillMissingServiceTimes} from '/assets/lawn-service-times.js';
 
 export function createOperationsUI(api){
  const {esc,money,clockLabel,dateText,toast}=api,data=()=>api.getData(),state=()=>api.getState();
@@ -92,9 +93,15 @@ export function createOperationsUI(api){
  }
  function openSettings(){
   const value=data();crewDraft=structuredClone(value.crews);
-  const fields={'setting-base-latitude':value.depot.latitude??'','setting-base-longitude':value.depot.longitude??'','setting-clock':clockInput(value.now),'setting-margin':value.settings.marginBps/100,'setting-minimum':value.settings.minimumPrice,'setting-mow':value.settings.defaultMowMinutes,'setting-edge':value.settings.defaultEdgeMinutes,'setting-setup':value.settings.setupMinutes,'ops-team-total':value.settings.totalMembers,'ops-crew-size':value.settings.defaultCrewMembers,'ops-crew-count':value.crews.length,'ops-daily-limit':value.settings.dailyJobLimit,'ops-default-crew-cap':value.settings.defaultCrewJobLimit,'ops-labor-mode':value.settings.laborBudgetMode,'ops-clock-date':value.clockDate||value.date};
+  const fields={'setting-base-latitude':value.depot.latitude??'','setting-base-longitude':value.depot.longitude??'','setting-clock':clockInput(value.now),'setting-margin':value.settings.marginBps/100,'setting-minimum':value.settings.minimumPrice,'setting-mow':value.settings.defaultMowMinutes,'setting-edge':value.settings.defaultEdgeMinutes,'setting-mulch':value.settings.defaultMulchMinutes,'setting-hedge':value.settings.defaultHedgeMinutes,'setting-setup':value.settings.setupMinutes,'ops-team-total':value.settings.totalMembers,'ops-crew-size':value.settings.defaultCrewMembers,'ops-crew-count':value.crews.length,'ops-daily-limit':value.settings.dailyJobLimit,'ops-default-crew-cap':value.settings.defaultCrewJobLimit,'ops-labor-mode':value.settings.laborBudgetMode,'ops-clock-date':value.clockDate||value.date};
   for(const [id,entry]of Object.entries(fields))document.getElementById(id).value=entry??'';
-  document.getElementById('setting-base-source').textContent=value.depot.locationSource||'No crew base location';document.getElementById('settings-error').textContent='';renderCrewDraft();updateTeamUsage();document.getElementById('settings-dialog').showModal();
+  document.getElementById('setting-fill-missing').checked=false;updateTimeDefaultsPreview();document.getElementById('setting-base-source').textContent=value.depot.locationSource||'No crew base location';document.getElementById('settings-error').textContent='';renderCrewDraft();updateTeamUsage();document.getElementById('settings-dialog').showModal();
+ }
+ function readTimeDefaults(){return {defaultMowMinutes:optionalNumber('setting-mow'),defaultEdgeMinutes:optionalNumber('setting-edge'),defaultMulchMinutes:optionalNumber('setting-mulch'),defaultHedgeMinutes:optionalNumber('setting-hedge'),setupMinutes:optionalNumber('setting-setup')};}
+ function updateTimeDefaultsPreview(){
+  const preview=document.getElementById('setting-time-preview'),fill=document.getElementById('setting-fill-missing');
+  try{const review=reviewMissingServiceTimes(data(),readTimeDefaults());fill.disabled=!review.updates.length;if(fill.disabled)fill.checked=false;preview.textContent=review.count?`${review.updates.length} of ${review.count} active, unstarted visits missing estimates can be filled.${review.unresolved.length?' '+review.unresolved.length+' still need a service default or a job-specific estimate.':''} Existing times and prices are kept.`:'No active, unstarted visits are missing estimates. These defaults apply to new imports and manual jobs with blank time.';}
+  catch(error){fill.disabled=true;fill.checked=false;preview.textContent=error.message;}
  }
  function setupCrews(){
   try{
@@ -111,11 +118,13 @@ export function createOperationsUI(api){
    const next=structuredClone(data()),base=parseCoordinates(document.getElementById('setting-base-latitude').value,document.getElementById('setting-base-longitude').value),clockDate=document.getElementById('ops-clock-date').value;
    if(!validServiceDate(clockDate))throw Error('Choose a valid demo workday.');if(next.jobs.some(job=>job.status==='working'&&job.serviceDate!==clockDate))throw Error('Finish the active job before changing the demo workday.');
    Object.assign(next.depot,base,{locationSource:hasCoordinates(base)?'Owner-entered crew base':'Crew-base coordinates needed'});next.now=parseClock(document.getElementById('setting-clock').value);next.clockDate=clockDate;
-   Object.assign(next.settings,{totalMembers:Number(document.getElementById('ops-team-total').value),defaultCrewMembers:Number(document.getElementById('ops-crew-size').value),dailyJobLimit:optionalNumber('ops-daily-limit'),defaultCrewJobLimit:optionalNumber('ops-default-crew-cap'),laborBudgetMode:document.getElementById('ops-labor-mode').value,marginBps:Math.round(Number(document.getElementById('setting-margin').value)*100),minimumPrice:Number(document.getElementById('setting-minimum').value).toFixed(2),defaultMowMinutes:Number(document.getElementById('setting-mow').value),defaultEdgeMinutes:Number(document.getElementById('setting-edge').value),setupMinutes:Number(document.getElementById('setting-setup').value)});
+   Object.assign(next.settings,{totalMembers:Number(document.getElementById('ops-team-total').value),defaultCrewMembers:Number(document.getElementById('ops-crew-size').value),dailyJobLimit:optionalNumber('ops-daily-limit'),defaultCrewJobLimit:optionalNumber('ops-default-crew-cap'),laborBudgetMode:document.getElementById('ops-labor-mode').value,marginBps:Math.round(Number(document.getElementById('setting-margin').value)*100),minimumPrice:Number(document.getElementById('setting-minimum').value).toFixed(2),...readTimeDefaults()});
+   validateServiceTimeDefaults(next.settings);
    next.crews=readCrewDraft();for(const crew of next.crews){validateCrew(crew);if(crew.breakMinutes>0&&(crew.breakStart<crew.shiftStart||crew.breakStart+crew.breakMinutes>crew.shiftEnd))throw Error('Keep each break within its crew’s shift.');}
    validateTeam(next);
    for(const job of next.jobs)if(!next.crews.some(crew=>crew.id===job.crew)){if(isReportedVisit(job))throw Error('Keep crews with reported visits.');job.crew=next.crews[0].id;job.serviceDate=null;}
-   planLawnDay(next,false);api.setData(next);state().optimized=false;invalidate();document.getElementById('settings-dialog').close();refresh();toast('Team, daily limits and cost assumptions saved. Review a refreshed weekly plan.');
+   const filled=document.getElementById('setting-fill-missing').checked?fillMissingServiceTimes(next):null;
+   planLawnDay(next,false);api.setData(next);state().optimized=false;invalidate();document.getElementById('settings-dialog').close();refresh();toast(filled?`${filled.updates.length} missing time estimates filled. Settings saved; review a refreshed weekly plan.`:'Team, daily limits and time defaults saved. Review a refreshed weekly plan.');
   }catch(error){document.getElementById('settings-error').textContent=error.message;}
  }
  function prepareManual(){document.getElementById('manual-service-date').value=selectedDate();document.getElementById('manual-client-stage').value='new';}
@@ -148,7 +157,7 @@ export function createOperationsUI(api){
   if(action==='undo-week')undoWeek();
   if(action==='view-day'){state().viewDate=button.dataset.date;state().mapCrew='all';api.save();api.go('today');}
  });
- document.getElementById('settings-form').addEventListener('input',updateTeamUsage);
+ document.getElementById('settings-form').addEventListener('input',event=>{updateTeamUsage();if(['setting-mow','setting-edge','setting-mulch','setting-hedge','setting-setup'].includes(event.target.id))updateTimeDefaultsPreview();});
  document.addEventListener('change',event=>{
   if(event.target.matches('.ops-client-select')){const chosen=selectedClients();event.target.checked?chosen.add(event.target.dataset.id):chosen.delete(event.target.dataset.id);state().selectedClientIds=[...chosen];refresh();}
   if(event.target.id==='ops-select-visible'){const ids=[...document.querySelectorAll('.ops-client-select')].map(input=>input.dataset.id),chosen=selectedClients();for(const id of ids)event.target.checked?chosen.add(id):chosen.delete(id);state().selectedClientIds=[...chosen];refresh();}

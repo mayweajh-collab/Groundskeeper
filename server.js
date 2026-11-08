@@ -21,7 +21,7 @@ const publicFiles={
 };
 for(const alias of ['/groundskeeper.html','/lawn.html','/dashboard.html'])publicFiles[alias]=publicFiles['/'];
 try{for(const name of await fs.readdir(new URL('public/vendor/clerk/',root)))if(/^[a-zA-Z0-9_.-]+\.js$/.test(name))publicFiles['/vendor/clerk/'+name]=['public/vendor/clerk/'+name,'text/javascript; charset=utf-8'];}catch{}
-for(const name of ['lawn-intake','lawn-geo','lawn-roads','lawn-address','lawn-planner','lawn-workspace','lawn-week','finance','csv'])publicFiles['/assets/'+name+'.js']=['lib/'+name+'.js','text/javascript; charset=utf-8'];
+for(const name of ['lawn-intake','lawn-geo','lawn-roads','lawn-address','lawn-planner','lawn-workspace','lawn-week','lawn-service-times','finance','csv'])publicFiles['/assets/'+name+'.js']=['lib/'+name+'.js','text/javascript; charset=utf-8'];
 publicFiles['/assets/lawn-engine.js']=['lib/lawn.js','text/javascript; charset=utf-8'];
 
 export function createServer(options={}){

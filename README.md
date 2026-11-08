@@ -17,12 +17,21 @@ The `main` branch is connected to the `groundskeeper` project in the RDBUILDS Ve
 - Search maintenance and installation projects, inspect shared visits, and review their milestones, notes and sample scope documents.
 - Reconcile project cost budgets, actual spending, outstanding commitments and additional work to finish. Forecast profit and margin update when the remaining forecast changes.
 - Import customer jobs from Excel or CSV, or add them manually.
+- Estimate blank service times from editable mowing, edging, mulching and hedge-maintenance defaults, adding setup once per visit; optionally fill existing missing estimates.
 - Resolve U.S. service addresses to estimated coordinates with the Census Geocoder.
 - Suggest job prices from service time, crew size, road travel, materials, equipment, overhead and target margin. The operator reviews the price.
 - Review and apply suggested prices for all eligible jobs or selected visits, with search, exact batch totals, explicit opt-in for replacing reviewed prices and an undo action.
 - Show customer stops and road-following crew routes on a map, alongside the local forecast.
 - Compare daily staffing and labor budgets, and propose a Monday–Friday schedule within crew shifts and available team size.
 - Archive and restore clients, distinguish new and existing clients, and record crew check-ins and completed work.
+
+## Service-time defaults
+
+Open **Week optimizer → Team & daily limits → Import time defaults**. Configure mowing, edging, mulching, hedge maintenance and setup in elapsed crew minutes. When an imported or manually entered job has no total time, Groundskeeper adds the default for every requested service plus setup once. Entering a job-specific total overrides the defaults. Each calculated visit retains its original time breakdown in its estimate source, so later changes to the business defaults do not misrepresent an older estimate.
+
+Mulching and hedge-maintenance defaults initially remain blank until the owner provides assumptions. A requested service with an unset default leaves the entire estimate unresolved. Combined defaults over 600 minutes require a job-specific estimate. These are starting assumptions to review for yard size, material volume and conditions; crew headcount does not automatically shorten elapsed service time.
+
+To update already imported work, enable **Also fill missing estimates on existing jobs** before saving settings. The form previews how many visits can be filled. This applies only to active, unstarted visits without an estimate. Entered times, reviewed prices, service dates, assignments and reported or archived work are retained. Updated time estimates feed the refreshed daily costs and the next weekly proposal; the weekly plan still requires review before applying it.
 
 ## Bulk price review
 
@@ -64,7 +73,7 @@ An optional GitHub Actions test workflow is included at `docs/ci-checks.yml`. It
 
 ## Data and planning assumptions
 
-The demo begins with 50 mock customer visits. Its first operations-workspace migration adds six sample projects and up to five sample installation visits, subject to the existing 150-visit limit. Existing prices, service dates and crew reports are retained. Missing prices and specialty-service durations remain unknown until reviewed. Some visits therefore need an estimate before the planner can schedule them. The app retains every client record and shows unscheduled work explicitly. The dated sample workday is labeled in the interface; the Today control returns to that workday.
+The demo begins with 50 mock customer visits. Its first operations-workspace migration adds six sample projects and up to five sample installation visits, subject to the existing 150-visit limit. Existing prices, service dates and crew reports are retained. Missing prices remain unknown until reviewed. Specialty-service times require an entered estimate or owner-configured defaults. Some visits therefore need an estimate before the planner can schedule them. The app retains every client record and shows unscheduled work explicitly. The dated sample workday is labeled in the interface; the Today control returns to that workday.
 
 Jobs, prices, settings, plans, project notes, forecasts and check-ins are saved to the signed-in owner's private business account. New accounts start empty unless the owner explicitly selects sample data or imports the previous browser workspace. The previous browser copy is retained during migration. The footer reports saving, saved, failed and conflict states. Account settings include backup download and retry controls. Live GPS tracking, accounting synchronization and customer email delivery remain outside this prototype; completion messages are drafts for review.
 
