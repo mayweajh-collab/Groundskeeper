@@ -4,6 +4,10 @@ A dashboard for a small lawn-care business owner who wants to plan crews, review
 
 **Live demo:** https://groundskeeper-nine.vercel.app
 
+**Repository:** https://github.com/mayweajh-collab/Groundskeeper
+
+The `main` branch is connected to the `groundskeeper` project in the RDBUILDS Vercel account. Pushes to `main` build and deploy the live site automatically. Keep credentials and `.env` files out of Git; the current demo integrations do not require API keys.
+
 ## What it does
 
 - Import customer jobs from Excel or CSV, or add them manually.
