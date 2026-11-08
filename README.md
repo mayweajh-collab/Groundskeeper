@@ -10,6 +10,8 @@ The `main` branch is connected to the `groundskeeper` project in the RDBUILDS Ve
 
 ## What it does
 
+- Sign in with managed Clerk accounts, create a business workspace, manage account security and sign out.
+- Keep business data in private Neon Postgres records scoped to the verified owner account, with version checks to prevent stale devices from overwriting newer changes.
 - Lead with today's assignments, crew staffing, scheduling exceptions and overdue sample invoices.
 - Assign and reschedule visits on a crew-by-week board, with a form that checks shifts, breaks, road travel, crew availability and conflicting work.
 - Search maintenance and installation projects, inspect shared visits, and review their milestones, notes and sample scope documents.
@@ -32,7 +34,7 @@ npm test
 npm start
 ```
 
-Open http://127.0.0.1:4180. Set `PORT` to choose a different local port. No API key or `.env` file is needed for this demo. `npm run dev` also rebuilds and starts the local server.
+Before starting, connect the existing Clerk and Neon integrations, pull development variables with `vercel env pull .env.local --yes`, and run `npm run accounts:setup`. Start Node with `node --env-file=.env.local server.js` so the local API can verify sessions and access the database. Open http://127.0.0.1:4180. Set `PORT` to choose a different local port. See [account setup](docs/business-accounts.md) for required variable names and production readiness.
 
 ## Project layout
 
@@ -55,7 +57,9 @@ An optional GitHub Actions test workflow is included at `docs/ci-checks.yml`. It
 
 The demo begins with 50 mock customer visits. Its first operations-workspace migration adds six sample projects and up to five sample installation visits, subject to the existing 150-visit limit. Existing prices, service dates and crew reports are retained. Missing prices and specialty-service durations remain unknown until reviewed. Some visits therefore need an estimate before the planner can schedule them. The app retains every client record and shows unscheduled work explicitly. The dated sample workday is labeled in the interface; the Today control returns to that workday.
 
-Jobs, prices, settings, plans, project notes, forecasts and check-ins are saved in browser storage on the current website. They are not shared across browsers or devices, and localhost storage is separate from the live site. A visible footer distinguishes browser saving from session-only changes when storage is unavailable. This prototype does not provide accounts, a shared database, live GPS tracking, accounting synchronization or email delivery. Completion messages are drafts for review.
+Jobs, prices, settings, plans, project notes, forecasts and check-ins are saved to the signed-in owner's private business account. New accounts start empty unless the owner explicitly selects sample data or imports the previous browser workspace. The previous browser copy is retained during migration. The footer reports saving, saved, failed and conflict states. Account settings include backup download and retry controls. Live GPS tracking, accounting synchronization and customer email delivery remain outside this prototype; completion messages are drafts for review.
+
+The provisioned Clerk instance currently uses development credentials for the hackathon preview. Configure a custom domain and a Clerk production instance before real customer use. Production credentials also require updating the exact Clerk host in the Content Security Policy. Business account isolation and API authorization are implemented, but this is not a claim of production security certification.
 
 Project finances use a separate, explicitly labeled sample ledger. They do not claim that modeled crew costs are recorded accounting expenses. Final forecast = actual spending + outstanding commitments + additional uncommitted cost to finish. Forecast cost to complete includes the latter two amounts. Profit = contract value minus final forecast; margin = profit divided by contract value. All figures are USD before tax. The patio example reconciles to $6,200 spent + $4,000 committed + $2,600 additional = $12,800 forecast; a $16,000 contract therefore yields $3,200 forecast profit and 20% margin. Outstanding commitments contain only unspent balances, avoiding double counting.
 

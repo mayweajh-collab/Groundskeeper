@@ -8,8 +8,8 @@ const require=createRequire(import.meta.url),root=new URL('../',import.meta.url)
 const read=file=>fs.readFile(new URL(file,root),'utf8');
 const normalize=text=>text.replace(/\r\n?/g,'\n');
 const strip=text=>text.replace(/^import .*?;\r?\n/gm,'');
-const files=['lib/finance.js','lib/csv.js','lib/lawn-geo.js','lib/lawn-workspace.js','lib/lawn-roads.js','lib/lawn-address.js','lib/lawn-intake.js','lib/lawn.js','lib/lawn-planner.js','lib/lawn-week.js','lib/landscape-projects.js','src/lawn/live-map.js','src/lawn/operations-ui.js','src/lawn/landscape-ui.js','src/lawn/app.js'];
-const [template,css,operationsCSS,raw,notices,...modules]=await Promise.all(['src/lawn/index.html','src/lawn/styles.css','src/lawn/operations.css','data/lawn-demo.json','THIRD-PARTY-NOTICES.txt',...files].map(read));
+const files=['lib/finance.js','lib/csv.js','lib/lawn-geo.js','lib/lawn-workspace.js','lib/lawn-roads.js','lib/lawn-address.js','lib/lawn-intake.js','lib/lawn.js','lib/lawn-planner.js','lib/lawn-week.js','lib/landscape-projects.js','lib/business-seed.js','src/lawn/live-map.js','src/lawn/operations-ui.js','src/lawn/landscape-ui.js','src/lawn/business-client.js','src/lawn/business-access.js','src/lawn/app.js'];
+const [template,css,operationsCSS,accountCSS,raw,notices,...modules]=await Promise.all(['src/lawn/index.html','src/lawn/styles.css','src/lawn/operations.css','src/lawn/business-access.css','data/lawn-demo.json','THIRD-PARTY-NOTICES.txt',...files].map(read));
 const [sheetjs,leaflet,leafletStyles]=await Promise.all(['xlsx/dist/xlsx.full.min.js','leaflet/dist/leaflet.js','leaflet/dist/leaflet.css'].map(file=>fs.readFile(require.resolve(file),'utf8')));
 let leafletCSS=leafletStyles;
 for(const name of ['layers.png','layers-2x.png','marker-icon.png']){
@@ -25,10 +25,13 @@ if(html===template||!html.includes('id="lawn-demo-data"'))throw Error('Dashboard
 const write=async(file,bytes)=>{const url=new URL(file,output);await fs.mkdir(new URL('.',url),{recursive:true});await fs.writeFile(url,bytes);};
 await write('index.html',html);
 await write('lawn.js',normalize(modules.map(strip).join('\n')));
-await write('lawn.css',normalize(leafletCSS)+'\n'+normalize(css)+'\n'+normalize(operationsCSS));
+await write('lawn.css',normalize(leafletCSS)+'\n'+normalize(css)+'\n'+normalize(operationsCSS)+'\n'+normalize(accountCSS));
 await write('vendor/leaflet.js',leaflet);
 await write('vendor/leaflet.css',leafletCSS);
 await write('vendor/xlsx.js',sheetjs);
+const clerkDist=new URL('../node_modules/@clerk/clerk-js/dist/',import.meta.url);
+for(const name of await fs.readdir(clerkDist))if(name==='clerk.browser.js'||/_clerk\.browser_.*\.js$/.test(name))await write('vendor/clerk/'+name,await fs.readFile(new URL(name,clerkDist)));
+await write('vendor/clerk/LICENSE',await fs.readFile(new URL('../node_modules/@clerk/clerk-js/LICENSE',import.meta.url)));
 await write('THIRD-PARTY-NOTICES.txt',notices);
 const records=data.jobs.map(j=>({client_id:j.clientId,client_name:j.name,address:j.street||j.address,city:j.city,state:j.region,zip:j.zip,county:j.county,phone:j.phone,email:j.email,mow:j.mow?'yes':'no',edge:j.edge?'yes':'no',mulch:j.mulch?'yes':'no',hedge:j.hedge?'yes':'no',job_price_usd:j.price,estimated_minutes:j.minutes,crew_id:j.crew,latitude:j.latitude,longitude:j.longitude}));
 await write('groundskeeper-demo-customers.csv',toCSV(records));

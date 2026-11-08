@@ -2,7 +2,7 @@ import http from 'node:http';
 import fs from 'node:fs/promises';
 import {Readable} from 'node:stream';
 import {pathToFileURL} from 'node:url';
-import {createGroundskeeperApi} from './lib/lawn-hosted-api.js';
+import {createAccountApi} from './lib/account-api.js';
 
 const root=new URL('./',import.meta.url);
 const config=JSON.parse(await fs.readFile(new URL('vercel.json',root),'utf8'));
@@ -20,11 +20,12 @@ const publicFiles={
  '/THIRD-PARTY-NOTICES.txt':['public/THIRD-PARTY-NOTICES.txt','text/plain; charset=utf-8']
 };
 for(const alias of ['/groundskeeper.html','/lawn.html','/dashboard.html'])publicFiles[alias]=publicFiles['/'];
+try{for(const name of await fs.readdir(new URL('public/vendor/clerk/',root)))if(/^[a-zA-Z0-9_.-]+\.js$/.test(name))publicFiles['/vendor/clerk/'+name]=['public/vendor/clerk/'+name,'text/javascript; charset=utf-8'];}catch{}
 for(const name of ['lawn-intake','lawn-geo','lawn-roads','lawn-address','lawn-planner','lawn-workspace','lawn-week','finance','csv'])publicFiles['/assets/'+name+'.js']=['lib/'+name+'.js','text/javascript; charset=utf-8'];
 publicFiles['/assets/lawn-engine.js']=['lib/lawn.js','text/javascript; charset=utf-8'];
 
 export function createServer(options={}){
- const api=createGroundskeeperApi(options);
+ const api=createAccountApi(options);
  return http.createServer(async(req,res)=>{
   const send=async response=>{res.writeHead(response.status,{...security,...Object.fromEntries(response.headers)});res.end(Buffer.from(await response.arrayBuffer()));};
   try{

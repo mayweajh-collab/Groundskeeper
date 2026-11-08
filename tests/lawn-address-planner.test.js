@@ -41,8 +41,8 @@ test('address service errors are retryable and cannot become guessed locations',
  await assert.rejects(timeout(address),error=>error.statusCode===504);
 });
 test('the local address endpoint rejects cross-origin calls and returns controlled lookup results',async()=>{
- let calls=0;const geocodeAddress=createAddressGeocoder({intervalMs:0,fetchImpl:async()=>{calls++;return {ok:true,json:async()=>census()};}}),server=createServer({geocodeAddress});
- await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));const base='http://127.0.0.1:'+server.address().port,post=input=>({method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(input)});
+ let calls=0;const geocodeAddress=createAddressGeocoder({intervalMs:0,fetchImpl:async()=>{calls++;return {ok:true,json:async()=>census()};}}),server=createServer({geocodeAddress,config:{ready:true},verifyAccount:async request=>request.headers.get('authorization')==='Bearer test-session'?{id:'test-owner'}:null});
+ await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));const base='http://127.0.0.1:'+server.address().port,post=input=>({method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer test-session'},body:JSON.stringify(input)});
  try{
   let response=await fetch(base+'/api/lawn/geocode',post({address}));assert.equal(response.status,200);assert.equal((await response.json()).matches.length,1);assert.equal(response.headers.get('cache-control'),'no-store');
   response=await fetch(base+'/api/lawn/geocode',post({address:''}));assert.equal(response.status,400);assert.equal(calls,1);

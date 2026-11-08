@@ -4,17 +4,23 @@
   "private": true,
   "type": "module",
   "description": "Lawn-care operations, pricing and weekly crew planning for a growing small business.",
-  "engines": {"node": "24.x"},
+  "engines": {
+    "node": "24.x"
+  },
   "scripts": {
     "build": "node scripts/build.js && node --check public/lawn.js",
     "predev": "npm run build",
-    "dev": "node server.js",
+    "dev": "node --env-file-if-exists=.env.local server.js",
     "prestart": "npm run build",
-    "start": "node server.js",
+    "start": "node --env-file-if-exists=.env.local server.js",
     "test": "node --test tests/*.test.js",
-    "check": "npm run build && npm test"
+    "check": "npm run build && npm test",
+    "accounts:setup": "node --env-file-if-exists=.env.local scripts/setup-accounts.js"
   },
   "dependencies": {
+    "@clerk/backend": "3.27.0",
+    "@clerk/clerk-js": "6.42.3",
+    "@neondatabase/serverless": "1.2.0",
     "leaflet": "1.9.4",
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
   }

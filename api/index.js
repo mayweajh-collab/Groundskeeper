@@ -1,3 +1,3 @@
-import {createGroundskeeperApi} from '../lib/lawn-hosted-api.js';
+import {createAccountApi} from '../lib/account-api.js';
 
-export default {fetch:createGroundskeeperApi()};
+export default {fetch:createAccountApi()};
