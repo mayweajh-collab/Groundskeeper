@@ -1,0 +1,21 @@
+{
+  "name": "groundskeeper",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Lawn-care operations, pricing and weekly crew planning for a growing small business.",
+  "engines": {"node": "24.x"},
+  "scripts": {
+    "build": "node scripts/build.js && node --check public/lawn.js",
+    "predev": "npm run build",
+    "dev": "node server.js",
+    "prestart": "npm run build",
+    "start": "node server.js",
+    "test": "node --test tests/*.test.js",
+    "check": "npm run build && npm test"
+  },
+  "dependencies": {
+    "leaflet": "1.9.4",
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
+  }
+}
