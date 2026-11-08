@@ -8,8 +8,8 @@ const require=createRequire(import.meta.url),root=new URL('../',import.meta.url)
 const read=file=>fs.readFile(new URL(file,root),'utf8');
 const normalize=text=>text.replace(/\r\n?/g,'\n');
 const strip=text=>text.replace(/^import .*?;\r?\n/gm,'');
-const files=['lib/finance.js','lib/csv.js','lib/lawn-geo.js','lib/lawn-workspace.js','lib/lawn-roads.js','lib/lawn-address.js','lib/lawn-intake.js','lib/lawn.js','lib/lawn-planner.js','lib/lawn-week.js','lib/landscape-projects.js','lib/business-seed.js','src/lawn/live-map.js','src/lawn/operations-ui.js','src/lawn/landscape-ui.js','src/lawn/business-client.js','src/lawn/business-access.js','src/lawn/app.js'];
-const [template,css,operationsCSS,accountCSS,raw,notices,...modules]=await Promise.all(['src/lawn/index.html','src/lawn/styles.css','src/lawn/operations.css','src/lawn/business-access.css','data/lawn-demo.json','THIRD-PARTY-NOTICES.txt',...files].map(read));
+const files=['lib/finance.js','lib/csv.js','lib/lawn-geo.js','lib/lawn-workspace.js','lib/lawn-roads.js','lib/lawn-address.js','lib/lawn-intake.js','lib/lawn.js','lib/lawn-planner.js','lib/lawn-week.js','lib/lawn-bulk-pricing.js','lib/landscape-projects.js','lib/business-seed.js','src/lawn/live-map.js','src/lawn/operations-ui.js','src/lawn/landscape-ui.js','src/lawn/business-client.js','src/lawn/business-access.js','src/lawn/bulk-pricing-ui.js','src/lawn/app.js'];
+const [template,css,operationsCSS,accountCSS,bulkCSS,raw,notices,...modules]=await Promise.all(['src/lawn/index.html','src/lawn/styles.css','src/lawn/operations.css','src/lawn/business-access.css','src/lawn/bulk-pricing.css','data/lawn-demo.json','THIRD-PARTY-NOTICES.txt',...files].map(read));
 const [sheetjs,leaflet,leafletStyles]=await Promise.all(['xlsx/dist/xlsx.full.min.js','leaflet/dist/leaflet.js','leaflet/dist/leaflet.css'].map(file=>fs.readFile(require.resolve(file),'utf8')));
 let leafletCSS=leafletStyles;
 for(const name of ['layers.png','layers-2x.png','marker-icon.png']){
@@ -25,7 +25,7 @@ if(html===template||!html.includes('id="lawn-demo-data"'))throw Error('Dashboard
 const write=async(file,bytes)=>{const url=new URL(file,output);await fs.mkdir(new URL('.',url),{recursive:true});await fs.writeFile(url,bytes);};
 await write('index.html',html);
 await write('lawn.js',normalize(modules.map(strip).join('\n')));
-await write('lawn.css',normalize(leafletCSS)+'\n'+normalize(css)+'\n'+normalize(operationsCSS)+'\n'+normalize(accountCSS));
+await write('lawn.css',normalize(leafletCSS)+'\n'+normalize(css)+'\n'+normalize(operationsCSS)+'\n'+normalize(accountCSS)+'\n'+normalize(bulkCSS));
 await write('vendor/leaflet.js',leaflet);
 await write('vendor/leaflet.css',leafletCSS);
 await write('vendor/xlsx.js',sheetjs);

@@ -37,6 +37,6 @@ Use the linked `rdbuilds/groundskeeper` Vercel project. Pull variables into igno
 
 ## Verification
 
-The automated suite contains 79 checks, including private API access, account scoping, forged-token rejection, cross-site writes, stale-device conflicts, bounded request bodies, schema validation, save sequencing and preservation of prior operational behavior.
+The automated suite contains 89 checks, including private API access, account scoping, forged-token rejection, cross-site writes, stale-device conflicts, bounded request bodies, schema validation, save sequencing, bulk price selection and rollback, and preservation of prior operational behavior.
 
 Browser testing used two temporary, verified Clerk test accounts and the real Neon database. It checked hosted sign-in, first-business setup, saved business-name changes, customer import, reload persistence, sign-out, a separate empty workspace for the second account, and restoration of the first account's records on return. Temporary accounts and their rows are removed after verification. Owner credentials are created by the user in the managed sign-up flow, never in this chat.

@@ -28,4 +28,4 @@ Browser checks cover project and schedule search, project selection and tabs, ex
 
 ## Prototype limits
 
-Data persists in this browser rather than a shared backend. Projects and invoices are a sample ledger, not connected accounting records. Scheduling compares estimated road travel and existing shift constraints; it is a heuristic and does not guarantee a global optimum. Address matches and weather require internet access and remain estimates. Field progress is a manual check-in, not live GPS. Completion messages are drafts; no customer email is sent.
+Data saves to the signed-in owner's private business account. Projects and invoices are a sample ledger, not connected accounting records. Scheduling compares estimated road travel and existing shift constraints; it is a heuristic and does not guarantee a global optimum. Address matches and weather require internet access and remain estimates. Field progress is a manual check-in, not live GPS. Completion messages are drafts; no customer email is sent.

@@ -19,9 +19,18 @@ The `main` branch is connected to the `groundskeeper` project in the RDBUILDS Ve
 - Import customer jobs from Excel or CSV, or add them manually.
 - Resolve U.S. service addresses to estimated coordinates with the Census Geocoder.
 - Suggest job prices from service time, crew size, road travel, materials, equipment, overhead and target margin. The operator reviews the price.
+- Review and apply suggested prices for all eligible jobs or selected visits, with search, exact batch totals, explicit opt-in for replacing reviewed prices and an undo action.
 - Show customer stops and road-following crew routes on a map, alongside the local forecast.
 - Compare daily staffing and labor budgets, and propose a Monday–Friday schedule within crew shifts and available team size.
 - Archive and restore clients, distinguish new and existing clients, and record crew check-ins and completed work.
+
+## Bulk price review
+
+In **Price studio**, choose **Review all suggestions** to start with every eligible job selected, or **Choose jobs** to select visits yourself. Search by client, address, service, crew or job ID. **Select matching jobs** selects only the current search results. The Jobs directory also offers **Price selected clients**, opening a visit-level review for those clients.
+
+The review shows current and suggested prices, the service date, crew, modeled cost and travel basis before one **Apply suggested prices** action. Suggestions use each visit's service-day route, including its allocated return leg, or an explicitly saved travel allowance. Unscheduled visits use a standalone return trip. Existing reviewed prices are kept unless the operator enables their inclusion. Archived clients, skipped visits and work already started or completed cannot be bulk-priced. Missing time, crew or road estimates require individual review.
+
+Applying a batch saves prices to the signed-in business account without changing schedules, reported time or project expense records. **Undo bulk prices** restores the last batch during the current page session, provided those jobs have not changed since. Reloading keeps the saved prices and clears the session-only undo history. Stale previews must be refreshed before applying.
 
 ## Run locally
 
